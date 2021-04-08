@@ -1,0 +1,70 @@
+version: '2.2'
+services:
+  elasticsearch:
+    image: elasticsearch:6.8.14
+    privileged: true
+    user: root
+    command:
+      - /bin/bash
+      - -c
+      - |
+        sysctl -w vm.max_map_count=26214400 &&
+        su elasticsearch -c bin/elasticsearch
+    container_name: elasticsearch
+    environment:
+      - node.name=es01
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+      - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - elastic
+    mem_limit: 2g # Delete when deploy in the server
+
+  kibana:
+    image: kibana:6.8.14
+    container_name: kibana
+    depends_on:
+      - elasticsearch
+    # volumes:
+    #   - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    networks:
+      - elastic
+
+  # logstash:
+  #   image: logstash:6.8.14
+  #   container_name: logstash
+  #   depends_on:
+  #     - elasticsearch
+  #     - kibana
+  #   command: logstash -f /usr/share/logstash/config/logstash.conf
+  #   volumes:
+  #     - ./pipeline/logstash.conf:/usr/share/logstash/config/logstash.conf
+  #     - ./drug.csv:/usr/share/logstash/data/drug.csv
+  #   environment:
+  #     ELASTICSEARCH_URL: http://elasticsearch:9200
+  #   networks: 
+  #     - elastic
+
+
+
+volumes:
+  esdata1:
+    driver: local
+networks:
+  elastic:
+    driver: bridge
+
