@@ -1,7 +1,7 @@
-cluster.name: "docker-cluster"
+cluster.name: docker-cluster
 network.host: 0.0.0.0
 xpack:
   security:
-    transport:
+    transport: 
       ssl:
         verification_mode: "none"

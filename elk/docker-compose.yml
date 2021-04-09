@@ -8,39 +8,42 @@ services:
       - /bin/bash
       - -c
       - |
-        sysctl -w vm.max_map_count=26214400 &&
+        sysctl -w vm.max_map_count=262144 &&
         su elasticsearch -c bin/elasticsearch
     container_name: elasticsearch
     environment:
-      - node.name=es01
-      - cluster.name=docker-cluster
+      - discovery.type=single-node
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - ELASTIC_PASSWORD=$ELASTIC_PASSWORD
+      - xpack.security.enabled=$ELASTIC_SECURITY
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g" # 2 values must be equal
     ulimits:
       memlock:
         soft: -1
         hard: -1
     volumes:
       - esdata1:/usr/share/elasticsearch/data
-      - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      # - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     ports:
       - 9200:9200
       - 9300:9300
     networks:
       - elastic
-    mem_limit: 2g # Delete when deploy in the server
+    # mem_limit: 2g # Delete when deploy in the server
 
   kibana:
     image: kibana:6.8.14
     container_name: kibana
     depends_on:
       - elasticsearch
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTIC_PASSWORD=$ELASTIC_PASSWORD
     # volumes:
     #   - ./kibana.yml:/usr/share/kibana/config/kibana.yml
     ports:
       - 5601:5601
-    environment:
-      ELASTICSEARCH_URL: http://elasticsearch:9200
     networks:
       - elastic
 
