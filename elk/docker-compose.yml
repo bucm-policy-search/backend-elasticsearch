@@ -16,13 +16,15 @@ services:
       - bootstrap.memory_lock=true
       - ELASTIC_PASSWORD=$ELASTIC_PASSWORD
       - xpack.security.enabled=$ELASTIC_SECURITY
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g" # 2 values must be equal
+      # - "ES_JAVA_OPTS=-Xms2g -Xmx2g" # 2 values must be equal
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g -Dhttp.proxyHost=172.23.176.1 -Dhttp.proxyPort=7890 -Dhttps.proxyHost=172.23.176.1 -Dhttps.proxyPort=7890"
     ulimits:
       memlock:
         soft: -1
         hard: -1
     volumes:
       - esdata1:/usr/share/elasticsearch/data
+      - ./analysis-ik/IKAnalyzer.cfg.xml:/usr/share/elasticsearch/config/analysis-ik/IKAnalyzer.cfg.xml
       # - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     ports:
       - 9200:9200
