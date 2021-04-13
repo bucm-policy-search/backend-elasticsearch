@@ -1,75 +1,69 @@
-version: '2.2'
+version: "2.2"
+
 services:
   elasticsearch:
-    image: elasticsearch:6.8.14
-    privileged: true
-    user: root
-    command:
-      - /bin/bash
-      - -c
-      - |
-        sysctl -w vm.max_map_count=262144 &&
-        su elasticsearch -c bin/elasticsearch
+    image: elasticsearch:${VERSION}
     container_name: elasticsearch
     environment:
-      - discovery.type=single-node
       - bootstrap.memory_lock=true
-      - ELASTIC_PASSWORD=$ELASTIC_PASSWORD
-      - xpack.security.enabled=$ELASTIC_SECURITY
-      # - "ES_JAVA_OPTS=-Xms2g -Xmx2g" # 2 values must be equal
-      - "ES_JAVA_OPTS=-Xms1g -Xmx1g -Dhttp.proxyHost=172.23.176.1 -Dhttp.proxyPort=7890 -Dhttps.proxyHost=172.23.176.1 -Dhttps.proxyPort=7890"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.license.self_generated.type=static
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=$CERTS_DIR/elasticsearch/elasticsearch.key
+      - xpack.security.http.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
+      - xpack.security.http.ssl.certificate=$CERTS_DIR/elasticsearch/elasticsearch.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
+      - xpack.security.transport.ssl.certificate=$CERTS_DIR/elasticsearch/elasticsearch.crt
+      - xpack.security.transport.ssl.key=$CERTS_DIR/elasticsearch/elasticsearch.key
     ulimits:
       memlock:
         soft: -1
         hard: -1
     volumes:
-      - esdata1:/usr/share/elasticsearch/data
+      - data01:/usr/share/elasticsearch/data
       - ./analysis-ik/IKAnalyzer.cfg.xml:/usr/share/elasticsearch/config/analysis-ik/IKAnalyzer.cfg.xml
       # - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - certs:$CERTS_DIR
     ports:
       - 9200:9200
-      - 9300:9300
     networks:
       - elastic
-    # mem_limit: 2g # Delete when deploy in the server
+    mem_limit: 2g # Delete when deploy in the server
+
+    healthcheck:
+      test: curl --cacert $CERTS_DIR/ca/ca.crt -s https://localhost:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   kibana:
-    image: kibana:6.8.14
+    image: kibana:${VERSION}
     container_name: kibana
-    depends_on:
-      - elasticsearch
-    environment:
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
-      - ELASTICSEARCH_USERNAME=elastic
-      - ELASTIC_PASSWORD=$ELASTIC_PASSWORD
-    # volumes:
-    #   - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+    depends_on: {"elasticsearch": {"condition": "service_healthy"}}
     ports:
       - 5601:5601
+    environment:
+      SERVERNAME: localhost
+      ELASTICSEARCH_URL: https://elasticsearch:9200
+      ELASTICSEARCH_HOSTS: https://elasticsearch:9200
+      ELASTICSEARCH_USERNAME: kibana_system
+      ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+      ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: $CERTS_DIR/ca/ca.crt
+      SERVER_SSL_ENABLED: "true"
+      SERVER_SSL_KEY: $CERTS_DIR/kib01/kib01.key
+      SERVER_SSL_CERTIFICATE: $CERTS_DIR/kib01/kib01.crt
+    volumes:
+      - certs:$CERTS_DIR
     networks:
       - elastic
 
-  # logstash:
-  #   image: logstash:6.8.14
-  #   container_name: logstash
-  #   depends_on:
-  #     - elasticsearch
-  #     - kibana
-  #   command: logstash -f /usr/share/logstash/config/logstash.conf
-  #   volumes:
-  #     - ./pipeline/logstash.conf:/usr/share/logstash/config/logstash.conf
-  #     - ./drug.csv:/usr/share/logstash/data/drug.csv
-  #   environment:
-  #     ELASTICSEARCH_URL: http://elasticsearch:9200
-  #   networks: 
-  #     - elastic
-
-
-
 volumes:
-  esdata1:
+  data01:
     driver: local
+
 networks:
   elastic:
     driver: bridge
-
