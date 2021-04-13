@@ -14,5 +14,7 @@
 ES多节点本身是为了整合多服务器设置的，其中分页备份主要是为了避免服务器集群因单节点`物理受损`导致大部分内容损失。所以即使本服务器性能足够，且Docker可以较轻松进行环境分离和多节点模拟，多节点模式并没有什么用。
 
 ## 问题及解决方法
-### initial heap size [536870912] not equal to maximum heap size [1073741824]; this can cause resize pauses and prevents mlockall from locking the entire heap
-"ES_JAVA_OPTS=-Xms2g -Xmx2g" ：Xms和Xmx两值必须相等。
+
+1.  initial heap size [536870912] not equal to maximum heap size [1073741824]; this can cause resize pauses and prevents mlockall from locking the entire heap
+
+    "ES_JAVA_OPTS=-Xms2g -Xmx2g" ：Xms和Xmx两值必须相等。
