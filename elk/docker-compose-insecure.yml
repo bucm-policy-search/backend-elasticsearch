@@ -12,7 +12,7 @@ services:
     environment:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
-      - ELASTICSEARCH_PASSWORD=$ELASTICSEARCH_PASSWORD
+      # - ELASTICSEARCH_PASSWORD=$ELASTICSEARCH_PASSWORD
       - xpack.security.enabled=true
       # Since Elasticsearch automatically sizes JVM heap based on a nodes’s roles and the total memory available to the node’s container. 
       # Do not set ES_JAVA_OPTS in production environment (that is don't use it in Server).

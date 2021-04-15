@@ -5,9 +5,10 @@ services:
     image: elasticsearch:${VERSION}
     container_name: elasticsearch
     environment:
+      - discovery.type=single-node
       - bootstrap.memory_lock=true
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-      - xpack.license.self_generated.type=static
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # delete in developing mode
+      - xpack.license.self_generated.type=basic
       - xpack.security.enabled=true
       - xpack.security.http.ssl.enabled=true
       - xpack.security.http.ssl.key=$CERTS_DIR/elasticsearch/elasticsearch.key
@@ -29,6 +30,7 @@ services:
       - certs:$CERTS_DIR
     ports:
       - 9200:9200
+      - 9300:9300
     networks:
       - elastic
     mem_limit: 2g # Delete when deploy in the server
@@ -42,6 +44,7 @@ services:
   kibana:
     image: kibana:${VERSION}
     container_name: kibana
+    depends_on: {elasticsearch}
     depends_on: {"elasticsearch": {"condition": "service_healthy"}}
     ports:
       - 5601:5601
@@ -50,11 +53,11 @@ services:
       ELASTICSEARCH_URL: https://elasticsearch:9200
       ELASTICSEARCH_HOSTS: https://elasticsearch:9200
       ELASTICSEARCH_USERNAME: kibana_system
-      ELASTICSEARCH_PASSWORD: ${ELASTICSEARCH_PASSWORD}
+      ELASTICSEARCH_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
       ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: $CERTS_DIR/ca/ca.crt
       SERVER_SSL_ENABLED: "true"
-      SERVER_SSL_KEY: $CERTS_DIR/kib01/kib01.key
-      SERVER_SSL_CERTIFICATE: $CERTS_DIR/kib01/kib01.crt
+      SERVER_SSL_KEY: $CERTS_DIR/kibana/kibana.key
+      SERVER_SSL_CERTIFICATE: $CERTS_DIR/kibana/kibana.crt
     volumes:
       - certs:$CERTS_DIR
     networks:
@@ -62,6 +65,8 @@ services:
 
 volumes:
   data01:
+    driver: local
+  certs:
     driver: local
 
 networks:
