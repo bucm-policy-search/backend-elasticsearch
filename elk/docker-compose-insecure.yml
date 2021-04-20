@@ -25,6 +25,8 @@ services:
     volumes:
       - esdata1:/usr/share/elasticsearch/data
       - ./analysis-ik/IKAnalyzer.cfg.xml:/usr/share/elasticsearch/config/analysis-ik/IKAnalyzer.cfg.xml
+      - ./certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+      - ./certs/elastic-stack-ca.p12:/usr/share/elasticsearch/config/elastic-stack-ca.p12
       # - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     ports:
       - 9200:9200

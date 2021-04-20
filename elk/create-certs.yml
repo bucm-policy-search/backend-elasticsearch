@@ -11,16 +11,10 @@ services:
           unzip /certs/bundle.zip -d /certs;
         fi;
         chown -R 1000:0 /certs;
-        cp -rf /certs/tmp/ca /certs
-        cp -rf /certs/tmp/elasticsearch /certs
-        cp -rf /certs/tmp/kibana /certs
       '
     volumes:
       - certs:/certs
-      # - ./certs/bundle.zip:/certs/bundle.zip
-      - /home/hijacker/search-engine/elk/certs/ca:/certs/tmp/ca/ # use absolute path
-      - /home/hijacker/search-engine/elk/certs/elasticsearch:/certs/tmp/elasticsearch
-      - /home/hijacker/search-engine/elk/certs/kibana:/certs/tmp/kibana
+      - .:/usr/share/elasticsearch/config/certificates
     networks:
       - elastic
 

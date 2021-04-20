@@ -4,21 +4,23 @@ services:
   elasticsearch:
     image: elasticsearch:${VERSION}
     container_name: elasticsearch
+    # command:
+      # - elasticsearch-keystore add xpack.security.http.ssl.keystore.secure_password
     environment:
+      - cluster.name=es
+      - node.name=es01
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # delete in developing mode
       - xpack.license.self_generated.type=basic
       - xpack.security.enabled=true
       - xpack.security.http.ssl.enabled=true
-      - xpack.security.http.ssl.key=$CERTS_DIR/elasticsearch/elasticsearch.key
-      - xpack.security.http.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
-      - xpack.security.http.ssl.certificate=$CERTS_DIR/elasticsearch/elasticsearch.crt
+      - xpack.security.http.ssl.keystore.path=/usr/share/elasticsearch/config/http.p12
       - xpack.security.transport.ssl.enabled=true
       - xpack.security.transport.ssl.verification_mode=certificate
-      - xpack.security.transport.ssl.certificate_authorities=$CERTS_DIR/ca/ca.crt
-      - xpack.security.transport.ssl.certificate=$CERTS_DIR/elasticsearch/elasticsearch.crt
-      - xpack.security.transport.ssl.key=$CERTS_DIR/elasticsearch/elasticsearch.key
+      - xpack.security.transport.ssl.client_authentication=required
+      - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
+      - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/elastic-stack-ca.p12
     ulimits:
       memlock:
         soft: -1
@@ -26,6 +28,10 @@ services:
     volumes:
       - data01:/usr/share/elasticsearch/data
       - ./analysis-ik/IKAnalyzer.cfg.xml:/usr/share/elasticsearch/config/analysis-ik/IKAnalyzer.cfg.xml
+      - ./certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+      - ./certs/elastic-stack-ca.p12:/usr/share/elasticsearch/config/elastic-stack-ca.p12
+      - ./certs/elasticsearch/http.p12:/usr/share/elasticsearch/config/http.p12
+      - ./logs/:/usr/share/elasticsearch/logs
       # - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - certs:$CERTS_DIR
     ports:
@@ -44,7 +50,8 @@ services:
   kibana:
     image: kibana:${VERSION}
     container_name: kibana
-    depends_on: {elasticsearch}
+    # depends_on: 
+    #   - elasticsearch
     depends_on: {"elasticsearch": {"condition": "service_healthy"}}
     ports:
       - 5601:5601
@@ -54,12 +61,14 @@ services:
       ELASTICSEARCH_HOSTS: https://elasticsearch:9200
       ELASTICSEARCH_USERNAME: kibana_system
       ELASTICSEARCH_PASSWORD: ${KIBANA_SYSTEM_PASSWORD}
-      ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: $CERTS_DIR/ca/ca.crt
+      elasticsearch.ssl.certificateAuthorities: /usr/share/kibana/config/elasticsearch-ca.pem
       SERVER_SSL_ENABLED: "true"
       SERVER_SSL_KEY: $CERTS_DIR/kibana/kibana.key
       SERVER_SSL_CERTIFICATE: $CERTS_DIR/kibana/kibana.crt
     volumes:
       - certs:$CERTS_DIR
+      - ./certs/kibana/elasticsearch-ca.pem:/usr/share/kibana/config/elasticsearch-ca.pem
+      # - ./kibana.yml:/usr/share/kibana/config/kibana.yml
     networks:
       - elastic
 
