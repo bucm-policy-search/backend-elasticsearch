@@ -17,4 +17,6 @@ ES多节点本身是为了整合多服务器设置的，其中分页备份主要
 
 1.  initial heap size [536870912] not equal to maximum heap size [1073741824]; this can cause resize pauses and prevents mlockall from locking the entire heap
 
-    "ES_JAVA_OPTS=-Xms2g -Xmx2g" ：Xms和Xmx两值必须相等。
+"ES_JAVA_OPTS=-Xms2g -Xmx2g" ：Xms和Xmx两值必须相等。
+
+2. 其他可参考：[踩坑日志](https://gricn.github.io/%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/ELK_build/)
