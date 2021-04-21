@@ -1,0 +1,20 @@
+version: 2.2
+
+service:
+  logstash:
+    image: logstash:7.12.0
+    container_name: logstash
+    depends_on:
+      - elasticsearch
+      - kibana
+    command: logstash -f /usr/share/logstash/config/logstash.conf
+    volumes:
+      - ./pipeline/logstash.conf:/usr/share/logstash/config/logstash.conf
+      - ./drug.csv:/usr/share/logstash/data/drug.csv
+    environment:
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+    networks: 
+      - elastic
+networks:
+  elastic:
+    driver: bridge
