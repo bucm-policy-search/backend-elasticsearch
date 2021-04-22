@@ -11,6 +11,8 @@ services:
       - sysctl -w vm.max_map_count=262144 && su elasticsearch -c bin/elasticsearch
     container_name: elasticsearch
     environment:
+      - cluster.name=es
+      - node.name=node1
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       # - ELASTICSEARCH_PASSWORD=$ELASTICSEARCH_PASSWORD
@@ -53,7 +55,25 @@ services:
       - 5601:5601
     networks:
       - elastic
-
+  
+  # logstash:
+  #   image: logstash:7.12.0
+  #   container_name: logstash
+  #   depends_on:
+  #     - elasticsearch
+  #     - kibana
+  #   command: logstash -f /usr/share/logstash/config/logstash.conf
+  #   volumes:
+  #     - ./pipeline/logstash.conf:/usr/share/logstash/config/logstash.conf
+  #     - ./pipeline/logs:/usr/share/logstash/logs
+  #     - /home/hijacker/web-scraping/result_raw.json:/usr/share/logstash/data/result_raw.json
+  #   environment:
+  #     xpack.security.enabled: 'true'
+  #     xpack.monitoring.elasticsearch.url: http://elasticsearch:9200
+  #     xpack.monitoring.elasticsearch.username: logstash_system
+  #     xpack.monitoring.elasticsearch.password: $LOGSTASH_SYSTEM_PASSWORD
+  #   networks: 
+  #     - elastic
 volumes:
   esdata1:
     driver: local

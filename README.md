@@ -20,3 +20,5 @@ ES多节点本身是为了整合多服务器设置的，其中分页备份主要
 "ES_JAVA_OPTS=-Xms2g -Xmx2g" ：Xms和Xmx两值必须相等。
 
 2. 其他可参考：[踩坑日志](https://gricn.github.io/%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/ELK_build/)
+
+3. Git加速： 团队开发不适用，仅服务器部署使用，尝试使用[这篇博文](https://blog.frytea.com/archives/504/)提及的方法进行git下载加速。

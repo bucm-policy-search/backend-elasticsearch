@@ -1,18 +1,23 @@
-version: 2.2
+version: '2.2'
 
-service:
+services:
   logstash:
     image: logstash:7.12.0
     container_name: logstash
-    depends_on:
-      - elasticsearch
-      - kibana
+    # depends_on:
+    #   - elasticsearch
+    #   - kibana
     command: logstash -f /usr/share/logstash/config/logstash.conf
     volumes:
       - ./pipeline/logstash.conf:/usr/share/logstash/config/logstash.conf
-      - ./drug.csv:/usr/share/logstash/data/drug.csv
+      - ./pipeline/logs:/usr/share/logstash/logs
+      - /home/hijacker/web-scraping/result_raw.json:/usr/share/logstash/data/result_raw.json
     environment:
-      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_PASSWORD: $ELASTICSEARCH_PASSWORD
+      xpack.security.enabled: 'enable'
+      xpack.monitoring.elasticsearch.url: http://elasticsearch:9200
+      xpack.monitoring.elasticsearch.username: logstash_system
+      xpack.monitoring.elasticsearch.password: $LOGSTASH_SYSTEM_PASSWORD
     networks: 
       - elastic
 networks:
