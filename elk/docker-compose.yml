@@ -21,6 +21,10 @@ services:
       # Do not set ES_JAVA_OPTS in production environment (that is don't use it in Server).
       # And Xms and Xmx in "ES_JAVA_OPTS=-Xms2g -Xmx2g" # 2 values must be equal. 
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Dhttp.proxyHost=172.23.176.1 -Dhttp.proxyPort=7890 -Dhttps.proxyHost=172.23.176.1 -Dhttps.proxyPort=7890"
+      - http.cors.enabled=true
+      - http.cors.allow-origin=/https?:\/\/(localhost)?(127.0.0.1)?(:[0-9]+)?.*/
+      - http.cors.allow-methods=GET, POST, OPTIONS, PUT, PATCH, DELETE # only in development mode
+      # - http.cors.allow-methods='GET, POST' # in production mode
     ulimits:
       memlock:
         soft: -1
