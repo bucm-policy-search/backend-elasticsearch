@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@elastic/elasticsearch": "^7.12.0",
+    "array.prototype.flatmap": "^1.2.4",
+    "dotenv": "^8.2.0"
+  }
+}
