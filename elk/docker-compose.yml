@@ -9,6 +9,7 @@ services:
       - /bin/bash
       - -c
       - sysctl -w vm.max_map_count=262144 && su elasticsearch -c bin/elasticsearch
+      # - wsl -d docker-desktop && sysctl -w vm.max_map_count=262144
     container_name: elasticsearch
     environment:
       - cluster.name=es
@@ -17,14 +18,13 @@ services:
       - bootstrap.memory_lock=true
       # - ELASTICSEARCH_PASSWORD=$ELASTICSEARCH_PASSWORD
       - xpack.security.enabled=true
-      # Since Elasticsearch automatically sizes JVM heap based on a nodes’s roles and the total memory available to the node’s container. 
+      # Since Elasticsearch automatically sizes JVM heap based on a nodes’s roles and the total memory available to the node’s container.
       # Do not set ES_JAVA_OPTS in production environment (that is don't use it in Server).
-      # And Xms and Xmx in "ES_JAVA_OPTS=-Xms2g -Xmx2g" # 2 values must be equal. 
+      # And Xms and Xmx in "ES_JAVA_OPTS=-Xms2g -Xmx2g" # 2 values must be equal.
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Dhttp.proxyHost=172.23.176.1 -Dhttp.proxyPort=7890 -Dhttps.proxyHost=172.23.176.1 -Dhttps.proxyPort=7890"
       - http.cors.enabled=true
       - http.cors.allow-origin=/https?:\/\/(localhost)?(127.0.0.1)?(:[0-9]+)?.*/
-      - http.cors.allow-methods=GET, POST, OPTIONS, PUT, PATCH, DELETE # only in development mode
-      # - http.cors.allow-methods='GET, POST' # in production mode
+      - http.cors.allow-methods=GET, POST
     ulimits:
       memlock:
         soft: -1
@@ -42,9 +42,9 @@ services:
     # mem_limit: 2g # Delete when deploy in the server
 
   kibana:
-    image: kibana:7.12.0
+    image: kibana:7.12.1
     container_name: kibana
-    depends_on: 
+    depends_on:
       - elasticsearch
 
     environment:
@@ -59,7 +59,7 @@ services:
       - 5601:5601
     networks:
       - elastic
-  
+
   # logstash:
   #   image: logstash:7.12.0
   #   container_name: logstash
@@ -76,7 +76,7 @@ services:
   #     xpack.monitoring.elasticsearch.url: http://elasticsearch:9200
   #     xpack.monitoring.elasticsearch.username: logstash_system
   #     xpack.monitoring.elasticsearch.password: $LOGSTASH_SYSTEM_PASSWORD
-  #   networks: 
+  #   networks:
   #     - elastic
 volumes:
   esdata1:
