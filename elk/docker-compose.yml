@@ -42,7 +42,7 @@ services:
     # mem_limit: 2g # Delete when deploy in the server
 
   kibana:
-    image: kibana:7.12.1
+    image: kibana:7.12.0
     container_name: kibana
     depends_on:
       - elasticsearch
