@@ -16,22 +16,21 @@ services:
       - node.name=node1
       - discovery.type=single-node
       - bootstrap.memory_lock=true
-      # - ELASTICSEARCH_PASSWORD=$ELASTICSEARCH_PASSWORD
       - xpack.security.enabled=true
       # Since Elasticsearch automatically sizes JVM heap based on a nodes’s roles and the total memory available to the node’s container.
+      # !!!!!!!!!!!!!
       # Do not set ES_JAVA_OPTS in production environment (that is don't use it in Server).
       # And Xms and Xmx in "ES_JAVA_OPTS=-Xms2g -Xmx2g" # 2 values must be equal.
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Dhttp.proxyHost=172.23.176.1 -Dhttp.proxyPort=7890 -Dhttps.proxyHost=172.23.176.1 -Dhttps.proxyPort=7890"
       - http.cors.enabled=true
       - http.cors.allow-origin=/https?:\/\/(localhost)?(127.0.0.1)?(:[0-9]+)?.*/
-      - http.cors.allow-methods=GET, POST
     ulimits:
       memlock:
         soft: -1
         hard: -1
     volumes:
       - esdata1:/usr/share/elasticsearch/data
-      - ./analysis-ik/IKAnalyzer.cfg.xml:/usr/share/elasticsearch/config/analysis-ik/IKAnalyzer.cfg.xml
+      - ./plugins:/usr/share/elasticsearch/plugins
       - ./certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
       - ./certs/elastic-stack-ca.p12:/usr/share/elasticsearch/config/elastic-stack-ca.p12
       # - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
@@ -39,7 +38,7 @@ services:
       - 9200:9200
     networks:
       - elastic
-    # mem_limit: 2g # Delete when deploy in the server
+    # mem_limit: 2g # Don't use in production environment.
 
   kibana:
     image: kibana:7.12.0
