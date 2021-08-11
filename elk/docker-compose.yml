@@ -1,4 +1,4 @@
-version: '2.2'
+version: "2.2"
 
 services:
   elasticsearch:
@@ -20,19 +20,23 @@ services:
       # Since Elasticsearch automatically sizes JVM heap based on a nodes’s roles and the total memory available to the node’s container.
       # !!!!!!!!!!!!!
       # Do not set ES_JAVA_OPTS in production environment (that is don't use it in Server).
+
       # And Xms and Xmx in "ES_JAVA_OPTS=-Xms2g -Xmx2g" # 2 values must be equal.
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Dhttp.proxyHost=172.23.176.1 -Dhttp.proxyPort=7890 -Dhttps.proxyHost=172.23.176.1 -Dhttps.proxyPort=7890"
+      # - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Dhttp.proxyHost=172.23.176.1 -Dhttp.proxyPort=7890 -Dhttps.proxyHost=172.23.176.1 -Dhttps.proxyPort=7890"
       - http.cors.enabled=true
-      - http.cors.allow-origin=/https?:\/\/(localhost)?(127.0.0.1)?(:[0-9]+)?.*/
+      - http.cors.allow-origin=/https?:((\/\/(localhost)?(127.0.0.1)?(:[0-9]+)?)|(\/\/10\.64\.80\.21(:[0-9]+)?))/
+      # - http.cors.allow-methods=GET, POST, OPTIONS, PUT, PATCH, DELETE # only in development mode
+      - http.cors.allow-methods=GET, POST # in production mode
     ulimits:
       memlock:
         soft: -1
         hard: -1
     volumes:
       - esdata1:/usr/share/elasticsearch/data
-      - ./plugins:/usr/share/elasticsearch/plugins
-      - ./certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
-      - ./certs/elastic-stack-ca.p12:/usr/share/elasticsearch/config/elastic-stack-ca.p12
+
+      - ./analysis-ik/IKAnalyzer.cfg.xml:/usr/share/elasticsearch/config/analysis-ik/IKAnalyzer.cfg.xml
+      # - ./certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+      # - ./certs/elastic-stack-ca.p12:/usr/share/elasticsearch/config/elastic-stack-ca.p12
       # - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     ports:
       - 9200:9200

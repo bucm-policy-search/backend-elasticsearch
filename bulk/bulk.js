@@ -1,6 +1,6 @@
 'use strict'
 
-const dataset = require('./output.json')
+const dataset = require('../output.json')
 
 require('array.prototype.flatmap').shim()
 require('dotenv').config()
@@ -15,7 +15,7 @@ const client = new Client({
 
 // reduce((dataset, doc) => dataset.concat([{ index: { _index: 'test' } }, doc]), []);
 
-async function run () {
+async function run() {
   const body = dataset.flatMap(doc => [{ index: { _index: 'test' } }, doc])
   // const body = reduce((dataset, doc) => dataset.concat([{ index: { _index: 'test' } }, doc]), []);
 
