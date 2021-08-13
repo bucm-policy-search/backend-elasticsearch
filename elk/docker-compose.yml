@@ -1,15 +1,14 @@
-version: "2.2"
+version: "3.9"
 
 services:
   elasticsearch:
-    image: elasticsearch:7.12.0
-    privileged: true
+    image: elasticsearch:7.14.0
+    privileged: true # Temporary workaround, not a good solution (https://github.com/docker/for-win/issues/5202)
     user: root
     command:
       - /bin/bash
       - -c
       - sysctl -w vm.max_map_count=262144 && su elasticsearch -c bin/elasticsearch
-      # - wsl -d docker-desktop && sysctl -w vm.max_map_count=262144
     container_name: elasticsearch
     environment:
       - cluster.name=es
@@ -17,72 +16,45 @@ services:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - xpack.security.enabled=true
-      # Since Elasticsearch automatically sizes JVM heap based on a nodes’s roles and the total memory available to the node’s container.
-      # !!!!!!!!!!!!!
-      # Do not set ES_JAVA_OPTS in production environment (that is don't use it in Server).
-
-      # And Xms and Xmx in "ES_JAVA_OPTS=-Xms2g -Xmx2g" # 2 values must be equal.
-      # - "ES_JAVA_OPTS=-Xms512m -Xmx512m -Dhttp.proxyHost=172.23.176.1 -Dhttp.proxyPort=7890 -Dhttps.proxyHost=172.23.176.1 -Dhttps.proxyPort=7890"
-      - http.cors.enabled=true
-      - http.cors.allow-origin=/https?:((\/\/(localhost)?(127.0.0.1)?(:[0-9]+)?)|(\/\/10\.64\.80\.21(:[0-9]+)?))/
+      # - http.cors.enabled=true
+      # - http.cors.allow-origin=/https?:((\/\/(localhost)?(127.0.0.1)?(:[0-9]+)?)|(\/\/10\.64\.80\.21(:[0-9]+)?))/
       # - http.cors.allow-methods=GET, POST, OPTIONS, PUT, PATCH, DELETE # only in development mode
-      - http.cors.allow-methods=GET, POST # in production mode
+      # - http.cors.allow-methods=GET, POST # in production mode
     ulimits:
       memlock:
         soft: -1
         hard: -1
     volumes:
-      - esdata1:/usr/share/elasticsearch/data
-
+      - esdata_1:/usr/share/elasticsearch/data
       - ./analysis-ik/IKAnalyzer.cfg.xml:/usr/share/elasticsearch/config/analysis-ik/IKAnalyzer.cfg.xml
       # - ./certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
       # - ./certs/elastic-stack-ca.p12:/usr/share/elasticsearch/config/elastic-stack-ca.p12
-      # - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     ports:
       - 9200:9200
     networks:
       - elastic
-    # mem_limit: 2g # Don't use in production environment.
 
   kibana:
-    image: kibana:7.12.0
+    image: kibana:7.14.0
     container_name: kibana
     depends_on:
       - elasticsearch
 
-    environment:
-      - xpack.security.enabled=true
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
-      - ELASTICSEARCH_USERNAME=kibana_system
-      - ELASTICSEARCH_PASSWORD=$KIBANA_SYSTEM_PASSWORD
+    env_file:
+      - ./secret_data/KIBANA_SYSTEM_PASSWORD.env
 
-    # volumes:
-    #   - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+    environment:
+      xpack.security.enabled: "true"
+      ELASTICSEARCH_URL: "http://elasticsearch:9200"
+      ELASTICSEARCH_USERNAME: "kibana_system"
+
     ports:
       - 5601:5601
     networks:
       - elastic
 
-  # logstash:
-  #   image: logstash:7.12.0
-  #   container_name: logstash
-  #   depends_on:
-  #     - elasticsearch
-  #     - kibana
-  #   command: logstash -f /usr/share/logstash/config/logstash.conf
-  #   volumes:
-  #     - ./pipeline/logstash.conf:/usr/share/logstash/config/logstash.conf
-  #     - ./pipeline/logs:/usr/share/logstash/logs
-  #     - /home/hijacker/web-scraping/result_raw.json:/usr/share/logstash/data/result_raw.json
-  #   environment:
-  #     xpack.security.enabled: 'true'
-  #     xpack.monitoring.elasticsearch.url: http://elasticsearch:9200
-  #     xpack.monitoring.elasticsearch.username: logstash_system
-  #     xpack.monitoring.elasticsearch.password: $LOGSTASH_SYSTEM_PASSWORD
-  #   networks:
-  #     - elastic
 volumes:
-  esdata1:
+  esdata_1:
     driver: local
 networks:
   elastic:

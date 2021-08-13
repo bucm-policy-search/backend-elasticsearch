@@ -4,3 +4,4 @@ important.txt
 elk/certs
 elk/secret-transfer
 elk/logs
+elk/secret_data
