@@ -16,6 +16,7 @@ services:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - xpack.security.enabled=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       # - http.cors.enabled=true
       # - http.cors.allow-origin=/https?:((\/\/(localhost)?(127.0.0.1)?(:[0-9]+)?)|(\/\/10\.64\.80\.21(:[0-9]+)?))/
       # - http.cors.allow-methods=GET, POST, OPTIONS, PUT, PATCH, DELETE # only in development mode
@@ -26,7 +27,7 @@ services:
         hard: -1
     volumes:
       - esdata_1:/usr/share/elasticsearch/data
-      - ./analysis-ik/IKAnalyzer.cfg.xml:/usr/share/elasticsearch/config/analysis-ik/IKAnalyzer.cfg.xml
+      - ./analysis-ik:/usr/share/elasticsearch/plugins/analysis-ik
       # - ./certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
       # - ./certs/elastic-stack-ca.p12:/usr/share/elasticsearch/config/elastic-stack-ca.p12
     ports:
