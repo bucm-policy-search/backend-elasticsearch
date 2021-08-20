@@ -60,6 +60,25 @@ ES 多节点本身是为了整合多服务器设置的，其中分页备份主�
 
 4. cd 到`elk`文件夹，`docker-compose down`后再`docker-compose up -d`。此时在`localhost:9200`和`localhost:5601`输入上文获取的`elastic`对应用户名和密码，就能直接获取数据或者进入后台管理中心了。
 5. 此时你可以通过 cURL`http://USERNAME:PASSWORD@lcoalhost:9200`或去`Kibana` `Dev Tools`用 ES 的`Query DSL`进行查询。详情请参见[文档](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html)
+6. 创建一个新的 index，并进行分词设置。如：
+   ```
+   PUT policy
+   {
+     "settings": {
+       "analysis":{
+         "analyzer": {
+           "default":{
+           "type": "ik_max_word"
+           },
+           "default_search":{
+             "type":"ik_smart"
+           }
+         }
+       }
+     }
+   }
+   ```
+   这样在放入新数据时它会自动使用分词器进行分词。需注意的是，`Elasticsearch`会对输入的内容默认采用分词策略，而系统默认的`Standard`对中文分词默认使用单字分割，如`北京`分词后变成`北`、`京`。若未进行如上面的设置，搜索`北京`既能得到`北京`，又能得到`北`、`京`（如【京】 xxxx 号文件）因为搜索时也会把搜素内容分为`北`和`京`两个字，从而导致搜索的不准确。
 
 ## Q&A
 
