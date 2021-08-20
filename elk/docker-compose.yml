@@ -16,7 +16,7 @@ services:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - xpack.security.enabled=true
-      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g" # Comment this line in production mode
       # - http.cors.enabled=true
       # - http.cors.allow-origin=/https?:((\/\/(localhost)?(127.0.0.1)?(:[0-9]+)?)|(\/\/10\.64\.80\.21(:[0-9]+)?))/
       # - http.cors.allow-methods=GET, POST, OPTIONS, PUT, PATCH, DELETE # only in development mode

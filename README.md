@@ -17,11 +17,55 @@
 
 ES 多节点本身是为了整合多服务器设置的，其中分页备份主要是为了避免服务器集群因单节点`物理受损`导致大部分内容损失。所以即使本服务器性能足够，且 Docker 可以较轻松进行环境分离和多节点模拟，多节点模式并没有什么用。
 
-## 问题及解决方法
+### 其他仓库运行本仓库所需设置
+
+这里默认使用者有访问外网的能力，如果没，需要将 Docker 镜像改为国内源，具体教程可 Google 自行搜索。
+
+1. cd 到`elk`文件夹中使用`docker-compose up -d`。首次下载时需要下载镜像，可能需要几分钟时间，稍等片刻。
+
+2. `docker exec -it elasticsearch bash` 进入容器环境中，然后`bin/elasticsearch-setup-passwords auto`，遇到提示按 enter 就行。这样就能得到一个像下文一样的默认密码。
+
+   ```txt
+   Changed password for user apm_system
+   PASSWORD apm_system = CHANGEME
+
+   Changed password for user kibana_system
+   PASSWORD kibana_system = CHANGEME
+
+   Changed password for user kibana
+   PASSWORD kibana = CHANGEME
+
+   Changed password for user logstash_system
+   PASSWORD logstash_system = CHANGEME
+
+   Changed password for user beats_system
+   PASSWORD beats_system = CHANGEME
+
+   Changed password for user remote_monitoring_user
+   PASSWORD remote_monitoring_user = CHANGEME
+
+   Changed password for user elastic
+   PASSWORD elastic = CHANGEME
+   ```
+
+   建议将密码保存在本地或如`bitwarden`之类的密码管理器中以免日后遗忘。
+
+3. 在`elk`文件夹下创建一个`secret_data`文件夹，并在`secret_data`文件夹中创建`KIBANA_SYSTEM_PASSWORD.env`文件，放置如下内容：
+
+   ```env
+   ELASTICSEARCH_PASSWORD=CHANGEME
+   ```
+
+   注意，此处要把密码改为上文的`kibana_system`密码。
+
+4. cd 到`elk`文件夹，`docker-compose down`后再`docker-compose up -d`。此时在`localhost:9200`和`localhost:5601`输入上文获取的`elastic`对应用户名和密码，就能直接获取数据或者进入后台管理中心了。
+5. 此时你可以通过 cURL`http://USERNAME:PASSWORD@lcoalhost:9200`或去`Kibana` `Dev Tools`用 ES 的`Query DSL`进行查询。详情请参见[文档](https://www.elastic.co/guide/en/elasticsearch/reference/current/query-filter-context.html)
+
+## Q&A
 
 1.  initial heap size [536870912] not equal to maximum heap size [1073741824]; this can cause resize pauses and prevents mlockall from locking the entire heap
 
-"ES_JAVA_OPTS=-Xms2g -Xmx2g" ：Xms 和 Xmx 两值必须相等。
+"ES_JAVA_OPTS=-Xms2g -Xmx2g" ：让 Xms 和 Xmx 两值相等。
 
 2. 其他可参考：[WSL#4232](https://github.com/microsoft/WSL/issues/4232), [docker/for-win#5202](https://github.com/docker/for-win/issues/5202) 和 [踩坑日志](https://gricn.github.io/%E6%8A%80%E6%9C%AF%E5%88%86%E4%BA%AB/ELK_build/)
 
