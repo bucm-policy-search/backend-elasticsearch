@@ -1,7 +1,11 @@
-node_modules
+node_modules/
+
+# ignore Mac cache file
+.DS_Store
+
+# ignore secrets
 .env
-important.txt
+
 elk/certs
-elk/secret-transfer
 elk/logs
 elk/secret_data
