@@ -1,0 +1,1 @@
+This folder is intended to import json file to Elasticsearch through Logstash in the early stage, since this repo now use api to connect Elasticsearch directly, user can ignore files in the folder now.
